@@ -1,0 +1,1544 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ScaleShift Chord Transposer</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --bg: #0b1220;
+      --bg-soft: #111b2f;
+      --panel: rgba(14, 22, 38, 0.9);
+      --panel-2: #10192b;
+      --field: #0d1524;
+      --text: #edf4ff;
+      --muted: #97a8c7;
+      --subtle: #6f83a8;
+      --border: rgba(165, 184, 220, 0.14);
+      --border-strong: rgba(165, 184, 220, 0.22);
+      --accent: #6aa7ff;
+      --accent-soft: rgba(106, 167, 255, 0.14);
+      --success: #22c55e;
+      --warning: #fbbf24;
+      --danger: #f87171;
+      --shadow: 0 24px 60px rgba(0, 0, 0, 0.28);
+      --radius-xl: 24px;
+      --radius-lg: 18px;
+      --radius-md: 14px;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      font-family: "Manrope", sans-serif;
+      color: var(--text);
+      background:
+        radial-gradient(circle at top left, rgba(106, 167, 255, 0.18), transparent 28%),
+        linear-gradient(180deg, #0f1728 0%, var(--bg) 100%);
+    }
+
+    .page {
+      max-width: 1240px;
+      margin: 0 auto;
+      padding: 24px 20px 36px;
+    }
+
+    .topbar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 16px;
+      padding: 18px 22px;
+      border-radius: 18px;
+      background: rgba(10, 17, 29, 0.72);
+      border: 1px solid var(--border);
+      backdrop-filter: blur(14px);
+      box-shadow: var(--shadow);
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      min-width: 0;
+    }
+
+    .brand-mark {
+      width: 42px;
+      height: 42px;
+      border-radius: 12px;
+      display: grid;
+      place-items: center;
+      font-weight: 800;
+      color: #08111d;
+      background: linear-gradient(135deg, #8bc2ff, var(--accent));
+      box-shadow: 0 10px 26px rgba(106, 167, 255, 0.28);
+    }
+
+    .brand-copy h1 {
+      margin: 0;
+      font-size: 22px;
+      line-height: 1;
+      letter-spacing: -0.03em;
+    }
+
+    .brand-copy p {
+      margin: 5px 0 0;
+      font-size: 12px;
+      text-transform: uppercase;
+      letter-spacing: 0.14em;
+      color: var(--muted);
+    }
+
+    .topbar-note {
+      font-size: 12px;
+      color: var(--muted);
+      border: 1px solid var(--border);
+      background: rgba(255, 255, 255, 0.03);
+      padding: 8px 12px;
+      border-radius: 999px;
+      white-space: nowrap;
+    }
+
+    .hero {
+      margin-top: 22px;
+      padding: 26px 28px;
+      border-radius: var(--radius-xl);
+      border: 1px solid var(--border);
+      background:
+        linear-gradient(135deg, rgba(106, 167, 255, 0.10), rgba(255, 255, 255, 0.02)),
+        rgba(12, 20, 34, 0.8);
+      box-shadow: var(--shadow);
+    }
+
+    .hero h2 {
+      margin: 0;
+      font-size: clamp(30px, 4vw, 48px);
+      line-height: 1;
+      letter-spacing: -0.05em;
+      max-width: 760px;
+    }
+
+    .hero p {
+      max-width: 760px;
+      margin: 14px 0 0;
+      font-size: 15px;
+      line-height: 1.7;
+      color: #cedaf0;
+    }
+
+    .hero-meta {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-top: 18px;
+    }
+
+    .hero-chip {
+      padding: 8px 12px;
+      border-radius: 999px;
+      border: 1px solid var(--border);
+      background: rgba(255, 255, 255, 0.03);
+      color: #dbe8ff;
+      font-size: 12px;
+    }
+
+    .layout {
+      margin-top: 24px;
+      display: grid;
+      grid-template-columns: 1.08fr 0.92fr;
+      gap: 24px;
+    }
+
+    .card {
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-xl);
+      padding: 22px;
+      box-shadow: var(--shadow);
+      backdrop-filter: blur(10px);
+    }
+
+    .section-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      margin-bottom: 18px;
+    }
+
+    .section-head h3 {
+      margin: 0;
+      font-size: 13px;
+      text-transform: uppercase;
+      letter-spacing: 0.14em;
+      color: var(--muted);
+    }
+
+    .section-tag {
+      padding: 7px 10px;
+      border-radius: 999px;
+      border: 1px solid var(--border);
+      background: rgba(255, 255, 255, 0.03);
+      color: var(--muted);
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+    }
+
+    .guide {
+      padding: 16px;
+      border-radius: var(--radius-lg);
+      background: linear-gradient(180deg, rgba(106, 167, 255, 0.12), rgba(106, 167, 255, 0.05));
+      border: 1px solid rgba(165, 184, 220, 0.14);
+      margin-bottom: 16px;
+    }
+
+    .guide-title {
+      margin: 0 0 8px;
+      font-size: 13px;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: #c4ddff;
+    }
+
+    .guide-copy {
+      margin: 0 0 14px;
+      color: #d8e4fb;
+      font-size: 14px;
+      line-height: 1.65;
+    }
+
+    .guide-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 12px;
+    }
+
+    .guide-item {
+      padding: 12px;
+      border-radius: var(--radius-md);
+      background: rgba(255, 255, 255, 0.035);
+      border: 1px solid rgba(165, 184, 220, 0.10);
+    }
+
+    .guide-item strong {
+      display: block;
+      margin-bottom: 6px;
+      color: #aecdff;
+      font-size: 12px;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+    }
+
+    .guide-item span {
+      font-size: 13px;
+      line-height: 1.6;
+      color: var(--text);
+    }
+
+    .starter-note {
+      margin-top: 16px;
+      padding-top: 14px;
+      border-top: 1px solid rgba(165, 184, 220, 0.10);
+      color: var(--subtle);
+      font-size: 13px;
+      line-height: 1.6;
+    }
+
+    .input-shell.error-state textarea,
+    .input-shell.error-state select {
+      border-color: rgba(248, 113, 113, 0.6);
+      box-shadow: 0 0 0 3px rgba(248, 113, 113, 0.10);
+    }
+
+    textarea,
+    select {
+      width: 100%;
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      background: var(--field);
+      color: var(--text);
+      font: inherit;
+      font-size: 14px;
+      padding: 14px 15px;
+      transition: border-color 150ms ease, box-shadow 150ms ease;
+    }
+
+    textarea {
+      resize: vertical;
+      min-height: 160px;
+      line-height: 1.65;
+    }
+
+    textarea::placeholder {
+      color: #7286ad;
+    }
+
+    textarea:focus,
+    select:focus {
+      outline: none;
+      border-color: rgba(106, 167, 255, 0.78);
+      box-shadow: 0 0 0 3px rgba(106, 167, 255, 0.16);
+    }
+
+    .validation-box {
+      margin-top: 12px;
+      min-height: 56px;
+      padding: 12px 14px;
+      border-radius: 14px;
+      border: 1px solid rgba(165, 184, 220, 0.10);
+      background: rgba(255, 255, 255, 0.03);
+    }
+
+    .validation-summary {
+      font-size: 13px;
+      color: #dbe8ff;
+    }
+
+    .validation-help {
+      margin-top: 6px;
+      font-size: 13px;
+      line-height: 1.5;
+      color: var(--muted);
+    }
+
+    .controls {
+      display: grid;
+      grid-template-columns: 1fr auto 1fr;
+      gap: 12px;
+      align-items: end;
+      margin-top: 18px;
+    }
+
+    .control-group label,
+    .output-label {
+      display: block;
+      margin-bottom: 8px;
+      color: var(--muted);
+      font-size: 12px;
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+    }
+
+    .swap-btn {
+      width: 52px;
+      height: 52px;
+      border-radius: 16px;
+      border: 1px solid var(--border);
+      background: rgba(255, 255, 255, 0.04);
+      color: var(--text);
+      font-size: 20px;
+      cursor: pointer;
+      transition: all 160ms ease;
+      margin-bottom: 1px;
+    }
+
+    .swap-btn:hover {
+      background: var(--accent-soft);
+      border-color: rgba(106, 167, 255, 0.42);
+      transform: translateY(-1px);
+    }
+
+    .actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      margin-top: 20px;
+    }
+
+    .btn {
+      border: none;
+      border-radius: 14px;
+      padding: 12px 16px;
+      font: inherit;
+      font-size: 14px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: transform 150ms ease, box-shadow 150ms ease, background 150ms ease, border-color 150ms ease;
+    }
+
+    .btn:hover {
+      transform: translateY(-1px);
+    }
+
+    .btn-primary {
+      color: #07111d;
+      background: linear-gradient(135deg, #8bc2ff, var(--accent));
+      box-shadow: 0 16px 28px rgba(106, 167, 255, 0.24);
+    }
+
+    .btn-secondary {
+      color: var(--text);
+      background: rgba(255, 255, 255, 0.04);
+      border: 1px solid var(--border);
+    }
+
+    .output-panel {
+      display: flex;
+      flex-direction: column;
+      min-height: 100%;
+    }
+
+    .output-toolbar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 14px;
+    }
+
+    .copy-btn {
+      border: none;
+      background: transparent;
+      color: var(--muted);
+      font: inherit;
+      font-size: 13px;
+      cursor: pointer;
+      transition: color 150ms ease, transform 150ms ease;
+      padding: 0;
+    }
+
+    .copy-btn:hover {
+      color: var(--accent);
+      transform: translateY(-1px);
+    }
+
+    #output {
+      opacity: 0;
+      transform: translateY(4px);
+      transition: opacity 180ms ease, transform 180ms ease;
+      min-height: 190px;
+      padding: 18px;
+      border-radius: 18px;
+      border: 1px solid rgba(165, 184, 220, 0.10);
+      background:
+        linear-gradient(180deg, rgba(255, 255, 255, 0.02), transparent),
+        var(--field);
+      color: #f8fbff;
+      font-family: "IBM Plex Mono", monospace;
+      font-size: 18px;
+      line-height: 1.8;
+      white-space: pre-wrap;
+    }
+
+    #output.show {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    #insight {
+      margin-top: 16px;
+      padding: 14px 16px;
+      border-radius: 16px;
+      background: rgba(106, 167, 255, 0.08);
+      border: 1px solid rgba(106, 167, 255, 0.14);
+      color: #cfe4ff;
+      font-size: 13px;
+      line-height: 1.6;
+    }
+
+    #messages {
+      margin-top: 12px;
+    }
+
+    .error,
+    .warning,
+    .success {
+      padding: 12px 14px;
+      border-radius: 14px;
+      font-size: 13px;
+      line-height: 1.55;
+      border: 1px solid transparent;
+    }
+
+    .error {
+      color: #ffd5d5;
+      background: rgba(248, 113, 113, 0.10);
+      border-color: rgba(248, 113, 113, 0.20);
+    }
+
+    .warning {
+      color: #ffe8aa;
+      background: rgba(251, 191, 36, 0.10);
+      border-color: rgba(251, 191, 36, 0.20);
+    }
+
+    .success {
+      color: #d8ffe3;
+      background: rgba(34, 197, 94, 0.10);
+      border-color: rgba(34, 197, 94, 0.20);
+    }
+
+    @media (max-width: 1080px) {
+      .layout {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    @media (max-width: 720px) {
+      .page {
+        padding: 16px 16px 28px;
+      }
+
+      .hero {
+        padding: 22px;
+      }
+
+      .guide-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .controls {
+        grid-template-columns: 1fr;
+      }
+
+      .swap-btn {
+        width: 100%;
+      }
+
+      .output-toolbar {
+        flex-direction: column;
+        align-items: flex-start;
+      }
+
+      .topbar {
+        flex-direction: column;
+        align-items: flex-start;
+      }
+
+      .topbar-note {
+        white-space: normal;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="page">
+    <nav class="topbar">
+      <div class="brand">
+        <div class="brand-mark">S</div>
+        <div class="brand-copy">
+          <h1>ScaleShift</h1>
+          <p>Chord Transposition Engine</p>
+        </div>
+      </div>
+      <div class="topbar-note">Music-aware input validation and chord transposition</div>
+    </nav>
+
+    <section class="hero">
+      <h2>Transpose chords cleanly and confidently.</h2>
+      <p>
+        Enter a chord progression, choose the original and target key, and ScaleShift will validate the input, stop on unidentified chords, suggest likely corrections, and return a clean transposed result.
+      </p>
+      <div class="hero-meta">
+        <div class="hero-chip">Supports `CM7`, `CΔ7`, `C-7`</div>
+        <div class="hero-chip">Handles `sus`, `sus2`, `sus4`</div>
+        <div class="hero-chip">Keeps slash chords intact</div>
+      </div>
+    </section>
+
+    <main class="layout">
+      <section class="card input-shell" id="inputPanel">
+        <div class="section-head">
+          <h3>Input</h3>
+          <div class="section-tag">Validated</div>
+        </div>
+
+        <div class="guide">
+          <p class="guide-title">Chord Naming Guide</p>
+          <p class="guide-copy">
+            Use <strong>m</strong> for minor chords, plain note names for major chords, and common suffixes like <strong>maj7</strong>, <strong>M7</strong>, <strong>Δ7</strong>, <strong>7</strong>, <strong>sus</strong>, <strong>sus4</strong>, <strong>sus2</strong>, and <strong>add9</strong>.
+          </p>
+
+          <div class="guide-grid">
+            <div class="guide-item">
+              <strong>Major</strong>
+              <span>C, F, Bb</span>
+            </div>
+            <div class="guide-item">
+              <strong>Minor</strong>
+              <span>Cm, Gm, Am, Dm7</span>
+            </div>
+            <div class="guide-item">
+              <strong>Major 7</strong>
+              <span>Cmaj7, CM7, CΔ7, Fmaj7</span>
+            </div>
+            <div class="guide-item">
+              <strong>Suspended</strong>
+              <span>Csus, Csus4, Gsus2</span>
+            </div>
+            <div class="guide-item">
+              <strong>Extensions</strong>
+              <span>G7, Dm9, G7#11, G7alt</span>
+            </div>
+            <div class="guide-item">
+              <strong>Slash</strong>
+              <span>C/E, G/B, Bb/D</span>
+            </div>
+          </div>
+
+          <div class="starter-note">
+            Example inputs: <strong>Bb F Gm Eb</strong> or <strong>Cmaj7 Am7 Dm7 G7</strong>
+          </div>
+        </div>
+
+        <textarea id="chords" placeholder="Enter chords like: Bb F Gm Eb, C/E, Cmaj7, CM7, Am7, Dm9, G7#11"></textarea>
+
+        <div class="validation-box">
+          <div id="liveValidation"></div>
+        </div>
+
+        <div class="controls">
+          <div class="control-group">
+            <label for="originalKey">Original Key</label>
+            <select id="originalKey"></select>
+          </div>
+
+          <button type="button" class="swap-btn" id="swapBtn" title="Swap keys">⇄</button>
+
+          <div class="control-group">
+            <label for="targetKey">Target Key</label>
+            <select id="targetKey"></select>
+          </div>
+        </div>
+
+        <div class="actions">
+          <button type="button" class="btn btn-primary" id="transposeBtn">Transpose Chords</button>
+          <button type="button" class="btn btn-secondary" id="clearBtn">Clear</button>
+        </div>
+      </section>
+
+      <section class="card output-panel">
+        <div class="section-head">
+          <h3>Output</h3>
+          <div class="section-tag">Copy Ready</div>
+        </div>
+
+        <div class="output-toolbar">
+          <div class="output-label" style="margin:0;">Transposed Progression</div>
+          <button type="button" class="copy-btn" id="copyBtn">Copy Output</button>
+        </div>
+
+        <div id="output">Enter chords above and select your keys.</div>
+        <div id="insight">Detected: Unknown</div>
+        <div id="messages"></div>
+      </section>
+    </main>
+  </div>
+
+  <script>
+    const NOTE_MAP = {
+      C: 0,
+      "B#": 0,
+      "C#": 1, Db: 1,
+      D: 2,
+      "D#": 3, Eb: 3,
+      E: 4, Fb: 4,
+      F: 5, "E#": 5,
+      "F#": 6, Gb: 6,
+      G: 7,
+      "G#": 8, Ab: 8,
+      A: 9,
+      "A#": 10, Bb: 10,
+      B: 11, Cb: 11
+    };
+
+    const NATURAL_SEMITONES = {
+      C: 0, D: 2, E: 4, F: 5, G: 7, A: 9, B: 11
+    };
+
+    const LETTER_SEQUENCE = ["C", "D", "E", "F", "G", "A", "B"];
+    const MAJOR_INTERVALS = [0, 2, 4, 5, 7, 9, 11];
+    const NATURAL_MINOR_INTERVALS = [0, 2, 3, 5, 7, 8, 10];
+
+    const SCALE_DEGREES_MAJOR = ["I", "ii", "iii", "IV", "V", "vi", "vii°"];
+    const SCALE_DEGREES_MINOR = ["i", "ii°", "III", "iv", "v", "VI", "VII"];
+
+    const MAJOR_KEYS = ["C", "G", "D", "A", "E", "B", "F#", "Gb", "Db", "Ab", "Eb", "Bb", "F"];
+    const MINOR_KEYS = ["Am", "Em", "Bm", "F#m", "C#m", "G#m", "D#m", "A#m", "Dm", "Gm", "Cm", "Fm", "Bbm", "Ebm", "Abm"];
+    const ALL_KEYS = [...MAJOR_KEYS, ...MINOR_KEYS];
+
+    const SHARP_NOTES = ["C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B"];
+    const FLAT_NOTES = ["C", "Db", "D", "Eb", "E", "F", "Gb", "G", "Ab", "A", "Bb", "B"];
+
+    const FLAT_KEYS = new Set(["F", "Bb", "Eb", "Ab", "Db", "Gb", "Dm", "Gm", "Cm", "Fm", "Bbm", "Ebm", "Abm"]);
+    const SHARP_KEYS = new Set(["C", "G", "D", "A", "E", "B", "F#", "Am", "Em", "Bm", "F#m", "C#m", "G#m", "D#m", "A#m"]);
+
+    const CHORD_COMPONENTS = {
+      triad: ["maj", "min", "dim", "aug", "°", "+", "M", "m", "-"],
+      alterations: ["#13", "b13", "#11", "b11", "#9", "b9", "#5", "b5", "alt"],
+      sus: ["sus2", "sus4", "sus"],
+      addExtensions: ["add13", "add11", "add9", "add6", "add4", "add2"]
+    };
+
+    const COMMON_SUFFIXES = [
+      "", "m", "maj7", "m7", "7", "sus", "sus4", "sus2", "add9",
+      "6", "m6", "9", "m9", "11", "13", "dim", "aug",
+      "maj9", "maj11", "maj13", "mmaj7", "7#11", "7b9", "7alt"
+    ];
+
+    const COMMON_BASS_NOTES = ["C", "D", "E", "F", "G", "A", "B", "Bb", "Eb", "F#", "C#"];
+
+    const originalSelect = document.getElementById("originalKey");
+    const targetSelect = document.getElementById("targetKey");
+    const chordsInput = document.getElementById("chords");
+    const liveValidation = document.getElementById("liveValidation");
+    const outputEl = document.getElementById("output");
+    const messagesEl = document.getElementById("messages");
+    const insightEl = document.getElementById("insight");
+    const transposeBtn = document.getElementById("transposeBtn");
+    const clearBtn = document.getElementById("clearBtn");
+    const copyBtn = document.getElementById("copyBtn");
+    const swapBtn = document.getElementById("swapBtn");
+    const inputPanel = document.getElementById("inputPanel");
+
+    function escapeHtml(text) {
+      return String(text)
+        .replaceAll("&", "&amp;")
+        .replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;")
+        .replaceAll('"', "&quot;")
+        .replaceAll("'", "&#39;");
+    }
+
+    function normalizeNote(note) {
+      const map = {
+        "B#": "C",
+        "E#": "F",
+        Cb: "B",
+        Fb: "E"
+      };
+      return map[note] || note;
+    }
+
+    function extractNote(noteStr) {
+      if (!noteStr) return null;
+      const match = noteStr.trim().match(/^[A-Ga-g](?:#|b)?/);
+      if (!match) return null;
+      return match[0].charAt(0).toUpperCase() + match[0].slice(1);
+    }
+
+    function isValidRootNote(root) {
+      return /^[A-G](?:#|b)?$/.test(root || "");
+    }
+
+    function isMinorKey(keyStr) {
+      return /(?:m|min)$/i.test(keyStr || "");
+    }
+
+    function getKeyRoot(keyStr) {
+      if (!keyStr) return "";
+      if (/min$/i.test(keyStr)) return keyStr.slice(0, -3);
+      if (/m$/i.test(keyStr)) return keyStr.slice(0, -1);
+      return keyStr;
+    }
+
+    function prefersFlats(keyStr) {
+      const normalizedKey = keyStr || "";
+      const keyRoot = getKeyRoot(normalizedKey);
+      if (FLAT_KEYS.has(normalizedKey) || keyRoot.includes("b")) return true;
+      if (SHARP_KEYS.has(normalizedKey) || keyRoot.includes("#")) return false;
+      return false;
+    }
+
+    function generateScale(rootKey, intervals) {
+      const rootLetter = rootKey.charAt(0).toUpperCase();
+      const startIndex = LETTER_SEQUENCE.indexOf(rootLetter);
+      const rootSemitone = NOTE_MAP[rootKey];
+
+      if (startIndex === -1 || rootSemitone === undefined) return null;
+
+      const scale = [];
+
+      for (let i = 0; i < 7; i++) {
+        const letter = LETTER_SEQUENCE[(startIndex + i) % 7];
+        const naturalSemitone = NATURAL_SEMITONES[letter];
+        const targetSemitone = (rootSemitone + intervals[i]) % 12;
+
+        let accidental = (targetSemitone - naturalSemitone + 12) % 12;
+        if (accidental > 6) accidental -= 12;
+        if (accidental > 1) accidental = 1;
+        if (accidental < -1) accidental = -1;
+
+        let note = letter;
+        if (accidental === 1) note += "#";
+        if (accidental === -1) note += "b";
+
+        scale.push(note);
+      }
+
+      return scale;
+    }
+
+    function generateMajorScale(rootKey) {
+      return generateScale(rootKey, MAJOR_INTERVALS);
+    }
+
+    function generateNaturalMinorScale(rootKey) {
+      return generateScale(rootKey, NATURAL_MINOR_INTERVALS);
+    }
+
+    function normalizeInputText(input) {
+      return input
+        .replace(/\u0394/g, "Δ")
+        .replace(/[–—]/g, "-")
+        .replace(/\s+-\s+/g, " | ")
+        .replace(/\b([A-Ga-g])\s+sharp\b/gi, (_, l) => l.toUpperCase() + "#")
+        .replace(/\b([A-Ga-g])\s+flat\b/gi, (_, l) => l.toUpperCase() + "b")
+        .replace(/\b([A-Ga-g](?:#|b)?)\s+major\b/gi, (_, root) => root.charAt(0).toUpperCase() + root.slice(1) + "maj")
+        .replace(/\b([A-Ga-g](?:#|b)?)\s+minor\b/gi, (_, root) => root.charAt(0).toUpperCase() + root.slice(1) + "m");
+    }
+
+    function convertNaturalLanguage(chord) {
+      let normalized = normalizeInputText(chord.trim());
+
+      normalized = normalized
+        .replace(/^([A-Ga-g](?:#|b)?)mi$/i, "$1m")
+        .replace(/^([A-Ga-g](?:#|b)?)min$/i, "$1m")
+        .replace(/^([A-Ga-g](?:#|b)?)minor$/i, "$1m")
+        .replace(/^([A-Ga-g](?:#|b)?)major$/i, "$1maj")
+        .replace(/^([A-Ga-g](?:#|b)?)M7$/i, "$1maj7")
+        .replace(/^([A-Ga-g](?:#|b)?)M9$/i, "$1maj9")
+        .replace(/^([A-Ga-g](?:#|b)?)M11$/i, "$1maj11")
+        .replace(/^([A-Ga-g](?:#|b)?)M13$/i, "$1maj13")
+        .replace(/^([A-Ga-g](?:#|b)?)Δ7$/i, "$1maj7")
+        .replace(/^([A-Ga-g](?:#|b)?)Δ9$/i, "$1maj9")
+        .replace(/^([A-Ga-g](?:#|b)?)Δ11$/i, "$1maj11")
+        .replace(/^([A-Ga-g](?:#|b)?)Δ13$/i, "$1maj13")
+        .replace(/^([A-Ga-g](?:#|b)?)-(\d*)$/i, (_, root, ext) => root + "m" + ext)
+        .replace(/^([A-Ga-g](?:#|b)?)sus$/i, "$1sus")
+        .replace(/^([A-Ga-g](?:#|b)?)dom7$/i, "$17")
+        .replace(/^([A-Ga-g](?:#|b)?)alt$/i, "$17alt")
+        .replace(/([A-Ga-g](?:#|b)?)MIN(\d+)/gi, "$1m$2")
+        .replace(/([A-Ga-g](?:#|b)?)MIN\b/gi, "$1m")
+        .replace(/([A-Ga-g](?:#|b)?)mi(\d+)/gi, "$1m$2")
+        .replace(/([A-Ga-g](?:#|b)?)M(\d+)/g, "$1maj$2")
+        .replace(/([A-Ga-g](?:#|b)?)major\b/gi, "$1maj");
+
+      if (normalized.length > 0) {
+        normalized = normalized.charAt(0).toUpperCase() + normalized.slice(1);
+      }
+
+      return normalized;
+    }
+
+    function tokenizePreservingLayout(input) {
+      const normalized = normalizeInputText(input);
+      return normalized.match(/([,|\n\r\t ]+|[^,|\n\r\t ]+)/g) || [];
+    }
+
+    function isSeparatorToken(token) {
+      return /^[,|\n\r\t ]+$/.test(token);
+    }
+
+    function parseChordInput(input) {
+      return tokenizePreservingLayout(input).filter(token => !isSeparatorToken(token));
+    }
+
+    function parseChord(chordStr) {
+      const chord = convertNaturalLanguage(chordStr.trim());
+
+      let root = "";
+      let quality = "";
+      let bassNote = "";
+
+      const slashIndex = chord.indexOf("/");
+      if (slashIndex !== -1) {
+        const chordPart = chord.slice(0, slashIndex);
+        const bassStr = chord.slice(slashIndex + 1).trim();
+
+        bassNote = extractNote(bassStr);
+        root = extractNote(chordPart);
+        quality = chordPart.slice(root ? root.length : 0);
+
+        return { root, quality, bassNote, normalized: chord };
+      }
+
+      root = extractNote(chord);
+      quality = chord.slice(root ? root.length : 0);
+
+      return { root, quality, bassNote, normalized: chord };
+    }
+
+    function normalizeQuality(quality) {
+      return quality
+        .replace(/\s+/g, "")
+        .replace(/Δ/gi, "maj")
+        .replace(/\(([^)]+)\)/g, (_, inner) => {
+          const normalizedInner = inner.replace(/\s+/g, "");
+
+          if (
+            /^(maj(?:7|9|11|13)?|m(?:maj7|6|7|9|11|13)?|dim|aug|sus(?:2|4)?|add(?:2|4|6|9|11|13)|[#b](?:5|9|11|13)|alt|6|7|9|11|13)$/i.test(normalizedInner)
+          ) {
+            return normalizedInner;
+          }
+
+          if (/^\d+$/.test(normalizedInner)) {
+            return "add" + normalizedInner;
+          }
+
+          return inner;
+        })
+        .replace(/MAJ/gi, "maj")
+        .replace(/MIN/gi, "m")
+        .replace(/alt/gi, "alt");
+    }
+
+    function levenshtein(a, b) {
+      const rows = a.length + 1;
+      const cols = b.length + 1;
+      const dp = Array.from({ length: rows }, () => Array(cols).fill(0));
+
+      for (let i = 0; i < rows; i++) dp[i][0] = i;
+      for (let j = 0; j < cols; j++) dp[0][j] = j;
+
+      for (let i = 1; i < rows; i++) {
+        for (let j = 1; j < cols; j++) {
+          const cost = a[i - 1] === b[j - 1] ? 0 : 1;
+          dp[i][j] = Math.min(
+            dp[i - 1][j] + 1,
+            dp[i][j - 1] + 1,
+            dp[i - 1][j - 1] + cost
+          );
+        }
+      }
+
+      return dp[a.length][b.length];
+    }
+
+    function buildSuggestionPool(roots = null) {
+      const baseRoots = roots || ["C", "C#", "Db", "D", "Eb", "E", "F", "F#", "Gb", "G", "Ab", "A", "Bb", "B"];
+      const chords = [];
+
+      for (const root of baseRoots) {
+        for (const suffix of COMMON_SUFFIXES) {
+          chords.push(root + suffix);
+        }
+        for (const bass of COMMON_BASS_NOTES) {
+          chords.push(root + "/" + bass);
+        }
+      }
+
+      return chords;
+    }
+
+    const GLOBAL_SUGGESTION_POOL = buildSuggestionPool();
+
+    function getSuggestionPoolForChord(input, parsed = null) {
+      const chord = parsed || parseChord(input);
+
+      if (chord && chord.root && chord.root in NOTE_MAP) {
+        const rootPool = buildSuggestionPool([chord.root]);
+        if (chord.bassNote && chord.bassNote in NOTE_MAP) {
+          rootPool.push(chord.root + "/" + chord.bassNote);
+        }
+        return rootPool;
+      }
+
+      const rootGuess = extractNote(convertNaturalLanguage(input));
+      if (rootGuess && rootGuess in NOTE_MAP) {
+        return buildSuggestionPool([rootGuess]);
+      }
+
+      return GLOBAL_SUGGESTION_POOL;
+    }
+
+    function suggestChord(input, parsed = null) {
+      const cleaned = convertNaturalLanguage(input).trim();
+      if (!cleaned) return null;
+
+      const pool = getSuggestionPoolForChord(input, parsed);
+      let best = null;
+      let bestDistance = Infinity;
+
+      for (const candidate of pool) {
+        const distance = levenshtein(cleaned.toLowerCase(), candidate.toLowerCase());
+        if (distance < bestDistance) {
+          bestDistance = distance;
+          best = candidate;
+        }
+      }
+
+      if (bestDistance <= 2) return best;
+      if (cleaned.length >= 5 && bestDistance <= 3) return best;
+      return null;
+    }
+
+    function parseChordStructure(quality) {
+      if (!quality) {
+        return {
+          triad: "maj",
+          extension: null,
+          alterations: [],
+          sus: null,
+          adds: [],
+          impliedSeventh: null,
+          remaining: "",
+          explicitMajor: false
+        };
+      }
+
+      quality = normalizeQuality(quality);
+
+      let pos = 0;
+      let triad = null;
+      let extension = null;
+      const alterations = [];
+      let sus = null;
+      const adds = [];
+      let impliedSeventh = null;
+      let explicitMajor = false;
+
+      if (/^m(?:maj|M)/.test(quality)) {
+        triad = "mmaj";
+        pos = quality.startsWith("mM") ? 2 : 4;
+      }
+
+      if (!triad) {
+        for (const t of CHORD_COMPONENTS.triad) {
+          if (quality.slice(pos).startsWith(t)) {
+            triad =
+              t === "M" ? "maj" :
+              t === "+" ? "aug" :
+              t === "°" ? "dim" :
+              t === "min" ? "m" :
+              t === "-" ? "m" :
+              t;
+            if (t === "maj" || t === "M") explicitMajor = true;
+            pos += t.length;
+            break;
+          }
+        }
+        if (!triad) triad = "maj";
+      }
+
+      function consumeExtension() {
+        const extensionMatch = quality.slice(pos).match(/^(13|11|9|7|6)/);
+        if (!extensionMatch || extension) return false;
+
+        extension = extensionMatch[1];
+        pos += extension.length;
+
+        if (["9", "11", "13"].includes(extension)) {
+          if (triad === "maj") {
+            impliedSeventh = explicitMajor ? "maj7" : "dom7";
+          } else if (triad === "m") {
+            impliedSeventh = "m7";
+          } else if (triad === "mmaj") {
+            impliedSeventh = "maj7";
+          }
+        }
+        return true;
+      }
+
+      function consumeAlterations() {
+        let found = false;
+        let keepGoing = true;
+
+        while (keepGoing) {
+          keepGoing = false;
+          for (const alt of CHORD_COMPONENTS.alterations) {
+            if (alt === "alt" && alterations.includes("alt")) continue;
+            if (quality.slice(pos).startsWith(alt)) {
+              alterations.push(alt);
+              pos += alt.length;
+              keepGoing = true;
+              found = true;
+              break;
+            }
+          }
+        }
+
+        return found;
+      }
+
+      function consumeSus() {
+        if (sus) return false;
+        for (const s of CHORD_COMPONENTS.sus) {
+          if (quality.slice(pos).startsWith(s)) {
+            sus = s;
+            triad = "sus";
+            pos += s.length;
+            return true;
+          }
+        }
+        return false;
+      }
+
+      function consumeAdds() {
+        let found = false;
+        let keepGoing = true;
+
+        while (keepGoing) {
+          keepGoing = false;
+          for (const addExt of CHORD_COMPONENTS.addExtensions) {
+            if (quality.slice(pos).startsWith(addExt)) {
+              adds.push(addExt);
+              pos += addExt.length;
+              keepGoing = true;
+              found = true;
+              break;
+            }
+          }
+        }
+
+        return found;
+      }
+
+      let advanced = true;
+      while (advanced) {
+        advanced = false;
+        if (consumeExtension()) advanced = true;
+        if (consumeAlterations()) advanced = true;
+        if (consumeSus()) advanced = true;
+        if (consumeAdds()) advanced = true;
+      }
+
+      return {
+        triad,
+        extension,
+        alterations,
+        sus,
+        adds,
+        impliedSeventh,
+        remaining: quality.slice(pos),
+        explicitMajor
+      };
+    }
+
+    function validateChordQuality(quality) {
+      if (!quality) return { valid: true };
+
+      const structure = parseChordStructure(quality);
+
+      if (structure.remaining) {
+        return {
+          valid: false,
+          code: "unknown_quality",
+          error: `Unsupported chord format "${quality}".`
+        };
+      }
+
+      if (structure.extension === "9" && structure.adds.includes("add9")) {
+        return { valid: false, code: "conflict", error: "Cannot combine 9 with add9." };
+      }
+
+      if (structure.extension === "11" && structure.adds.includes("add11")) {
+        return { valid: false, code: "conflict", error: "Cannot combine 11 with add11." };
+      }
+
+      if (structure.extension === "13" && structure.adds.includes("add13")) {
+        return { valid: false, code: "conflict", error: "Cannot combine 13 with add13." };
+      }
+
+      return { valid: true };
+    }
+
+    function validateChord(chordStr) {
+      const parsed = parseChord(chordStr);
+
+      if (!parsed || !parsed.root) {
+        const suggestion = suggestChord(chordStr);
+        return {
+          valid: false,
+          error: suggestion
+            ? `Chord "${chordStr}" was not identified. Did you mean "${suggestion}"?`
+            : `Chord "${chordStr}" was not identified. Use formats like C, Cm, Cmaj7, Am7, Bb, F#, or C/E.`
+        };
+      }
+
+      if (!isValidRootNote(parsed.root) || !(parsed.root in NOTE_MAP)) {
+        const suggestion = suggestChord(chordStr, parsed);
+        return {
+          valid: false,
+          error: suggestion
+            ? `Invalid root note in "${chordStr}". Did you mean "${suggestion}"?`
+            : `Invalid root note in "${chordStr}". Use note names like C, F#, Bb, or Eb.`
+        };
+      }
+
+      if (parsed.bassNote && (!isValidRootNote(parsed.bassNote) || !(parsed.bassNote in NOTE_MAP))) {
+        const suggestion = suggestChord(chordStr, parsed);
+        return {
+          valid: false,
+          error: suggestion
+            ? `Chord "${chordStr}" was not identified. Did you mean "${suggestion}"?`
+            : `Invalid slash chord "${chordStr}". Slash chords should look like C/E or Bb/D.`
+        };
+      }
+
+      const qualityValidation = validateChordQuality(parsed.quality);
+      if (!qualityValidation.valid) {
+        const suggestion = suggestChord(chordStr, parsed);
+        return {
+          valid: false,
+          error: suggestion
+            ? `Chord "${chordStr}" was not identified. Did you mean "${suggestion}"?`
+            : qualityValidation.error
+        };
+      }
+
+      return { valid: true };
+    }
+
+    function canonicalizeQuality(rawQuality) {
+      const structure = parseChordStructure(rawQuality);
+      if (structure.remaining) return rawQuality;
+
+      let result = "";
+
+      if (structure.triad === "mmaj") {
+        result += "mmaj";
+      } else if (structure.triad === "m") {
+        result += "m";
+      } else if (structure.triad === "dim") {
+        result += "dim";
+      } else if (structure.triad === "aug") {
+        result += "aug";
+      } else if (structure.triad === "maj" && structure.explicitMajor && structure.extension) {
+        result += "maj";
+      }
+
+      if (structure.extension) result += structure.extension;
+      if (structure.alterations.length > 0) result += structure.alterations.join("");
+      if (structure.sus) result += structure.sus;
+      if (structure.adds.length > 0) result += structure.adds.join("");
+
+      return result;
+    }
+
+    function getDiatonicChords(key) {
+      const minorKey = isMinorKey(key);
+      const keyRoot = getKeyRoot(key);
+      const scale = minorKey ? generateNaturalMinorScale(keyRoot) : generateMajorScale(keyRoot);
+
+      if (!scale) return null;
+
+      const triads = minorKey
+        ? ["m", "dim", "maj", "m", "m", "maj", "maj"]
+        : ["maj", "m", "m", "maj", "maj", "m", "dim"];
+
+      const degrees = minorKey ? SCALE_DEGREES_MINOR : SCALE_DEGREES_MAJOR;
+
+      return scale.map((root, i) => ({
+        root,
+        triad: triads[i],
+        degree: degrees[i],
+        pitch: NOTE_MAP[root]
+      }));
+    }
+
+    function isDiatonic(chord, key) {
+      const diatonic = getDiatonicChords(key);
+      if (!diatonic) return null;
+
+      const parsed = parseChord(chord);
+      if (!parsed || !parsed.root) return null;
+
+      const rootPitch = NOTE_MAP[parsed.root];
+      if (rootPitch === undefined) {
+        return { diatonic: false, reason: "Invalid root note" };
+      }
+
+      const structure = parseChordStructure(parsed.quality);
+
+      for (const d of diatonic) {
+        if (rootPitch === d.pitch) {
+          if (structure.sus) {
+            return {
+              diatonic: true,
+              degree: d.degree,
+              expectedTriad: d.triad,
+              actualTriad: "sus"
+            };
+          }
+
+          const actualTriad = structure.triad === "mmaj" ? "m" : structure.triad;
+          if (actualTriad === d.triad) {
+            return {
+              diatonic: true,
+              degree: d.degree,
+              expectedTriad: d.triad,
+              actualTriad
+            };
+          }
+
+          return {
+            diatonic: false,
+            degree: d.degree,
+            expectedTriad: d.triad,
+            actualTriad,
+            reason: `Root is ${d.degree} but expected ${d.triad}, got ${actualTriad}`
+          };
+        }
+      }
+
+      return {
+        diatonic: false,
+        reason: "Root note not in diatonic scale"
+      };
+    }
+
+    function spellNoteFromSemitone(semitone, targetKey) {
+      const value = (semitone + 12) % 12;
+      return prefersFlats(targetKey) ? FLAT_NOTES[value] : SHARP_NOTES[value];
+    }
+
+    function transposeNote(root, shift, targetKey) {
+      if (!root || !(root in NOTE_MAP)) return null;
+
+      const oldIndex = NOTE_MAP[root];
+      const newIndex = (oldIndex + shift + 12) % 12;
+
+      const keyRoot = getKeyRoot(targetKey);
+      const scale = isMinorKey(targetKey)
+        ? generateNaturalMinorScale(keyRoot)
+        : generateMajorScale(keyRoot);
+
+      if (scale) {
+        for (const note of scale) {
+          if (NOTE_MAP[note] === newIndex) return normalizeNote(note);
+        }
+      }
+
+      return normalizeNote(spellNoteFromSemitone(newIndex, targetKey));
+    }
+
+    function transposeChord(chordStr, shift, targetKey) {
+      const parsed = parseChord(chordStr);
+
+      if (!parsed || !parsed.root) {
+        return { transposed: chordStr, error: `Invalid chord: ${chordStr}` };
+      }
+
+      const newRoot = transposeNote(parsed.root, shift, targetKey);
+      if (!newRoot) {
+        return { transposed: chordStr, error: `Cannot transpose root: ${parsed.root}` };
+      }
+
+      const canonicalQuality = canonicalizeQuality(parsed.quality);
+      let result = newRoot + canonicalQuality;
+
+      if (parsed.bassNote) {
+        const newBass = transposeNote(parsed.bassNote, shift, targetKey);
+        if (!newBass) {
+          return { transposed: chordStr, error: `Cannot transpose bass note: ${parsed.bassNote}` };
+        }
+        result += "/" + newBass;
+      }
+
+      return { transposed: result };
+    }
+
+    function analyzeProgression(chords, key) {
+      if (!chords.length) return "Unknown";
+
+      const diatonicResults = chords.map(chord => isDiatonic(chord, key));
+      const allDiatonic = diatonicResults.every(result => result && result.diatonic);
+
+      if (allDiatonic) {
+        const degrees = diatonicResults.map(result => result.degree).join(" - ");
+        return `Diatonic progression in ${key} (${degrees})`;
+      }
+
+      return `Non-diatonic progression relative to ${key}`;
+    }
+
+    function setMessage(type, text) {
+      messagesEl.innerHTML = `<div class="${type}">${escapeHtml(text)}</div>`;
+    }
+
+    function clearMessage() {
+      messagesEl.innerHTML = "";
+    }
+
+    function setErrorState(isError) {
+      inputPanel.classList.toggle("error-state", isError);
+    }
+
+    function collectValidationErrors(chords) {
+      const errors = [];
+      for (const chord of chords) {
+        const validation = validateChord(chord);
+        if (!validation.valid && validation.error) {
+          errors.push(validation.error);
+        }
+      }
+      return errors;
+    }
+
+    function renderValidation() {
+      const input = chordsInput.value.trim();
+
+      if (!input) {
+        liveValidation.innerHTML = `
+          <div class="validation-summary">Ready for input.</div>
+          <div class="validation-help">Type chords like <strong>Cmaj7 Am7 Dm7 G7</strong> and choose your keys.</div>
+        `;
+        setErrorState(false);
+        return;
+      }
+
+      const chords = parseChordInput(input);
+      let validCount = 0;
+      const issues = [];
+
+      chords.forEach(chord => {
+        const validation = validateChord(chord);
+        if (validation.valid) {
+          validCount++;
+        } else if (validation.error) {
+          issues.push(validation.error);
+        }
+      });
+
+      if (issues.length > 0) {
+        liveValidation.innerHTML = `
+          <div class="validation-summary">${validCount}/${chords.length} chords recognized.</div>
+          <div class="validation-help">${escapeHtml(issues[0])}</div>
+        `;
+        setErrorState(true);
+        return;
+      }
+
+      liveValidation.innerHTML = `
+        <div class="validation-summary">✓ ${validCount}/${chords.length} chords recognized.</div>
+        <div class="validation-help">Looks good. Press <strong>Transpose Chords</strong> or use <strong>Ctrl/Cmd + Enter</strong>.</div>
+      `;
+      setErrorState(false);
+    }
+
+    function transposeChords() {
+      const input = chordsInput.value;
+      const originalKeyStr = originalSelect.value;
+      const targetKeyStr = targetSelect.value;
+
+      clearMessage();
+
+      if (input.trim().length === 0) {
+        outputEl.textContent = "Enter chords above and select your keys.";
+        outputEl.classList.remove("show");
+        insightEl.textContent = "Detected: Unknown";
+        setErrorState(false);
+        return;
+      }
+
+      const originalKeyRoot = getKeyRoot(originalKeyStr);
+      const targetKeyRoot = getKeyRoot(targetKeyStr);
+
+      if (!(originalKeyRoot in NOTE_MAP) || !(targetKeyRoot in NOTE_MAP)) {
+        setMessage("error", "Invalid key selected.");
+        setErrorState(true);
+        return;
+      }
+
+      const tokens = tokenizePreservingLayout(input);
+      const chords = tokens.filter(token => !isSeparatorToken(token));
+      const validationErrors = collectValidationErrors(chords);
+
+      if (validationErrors.length > 0) {
+        outputEl.textContent = "Fix unidentified chords before transposing.";
+        outputEl.classList.add("show");
+        setMessage("error", validationErrors[0]);
+        insightEl.textContent = "Detected: Invalid input";
+        setErrorState(true);
+        return;
+      }
+
+      const shift = (NOTE_MAP[targetKeyRoot] - NOTE_MAP[originalKeyRoot] + 12) % 12;
+      const transposedTokens = tokens.map(token => {
+        if (isSeparatorToken(token)) return token;
+        return transposeChord(token, shift, targetKeyStr).transposed;
+      });
+
+      outputEl.textContent = transposedTokens.join("");
+      outputEl.classList.add("show");
+      setMessage("success", "Transposition successful.");
+      insightEl.textContent = "Detected: " + analyzeProgression(chords, originalKeyStr);
+      setErrorState(false);
+    }
+
+    function clearAll() {
+      chordsInput.value = "";
+      outputEl.textContent = "Enter chords above and select your keys.";
+      outputEl.classList.remove("show");
+      insightEl.textContent = "Detected: Unknown";
+      clearMessage();
+      renderValidation();
+      chordsInput.focus();
+    }
+
+    function swapKeys() {
+      const currentOriginal = originalSelect.value;
+      originalSelect.value = targetSelect.value;
+      targetSelect.value = currentOriginal;
+
+      if (chordsInput.value.trim()) {
+        transposeChords();
+      }
+    }
+
+    function populateKeySelects() {
+      ALL_KEYS.forEach(note => {
+        const option1 = document.createElement("option");
+        option1.value = note;
+        option1.textContent = note;
+        originalSelect.appendChild(option1);
+
+        const option2 = document.createElement("option");
+        option2.value = note;
+        option2.textContent = note;
+        targetSelect.appendChild(option2);
+      });
+
+      originalSelect.value = "C";
+      targetSelect.value = "G";
+    }
+
+    populateKeySelects();
+    renderValidation();
+
+    chordsInput.addEventListener("input", renderValidation);
+    transposeBtn.addEventListener("click", transposeChords);
+    clearBtn.addEventListener("click", clearAll);
+    swapBtn.addEventListener("click", swapKeys);
+
+    copyBtn.addEventListener("click", async () => {
+      const text = outputEl.textContent.trim();
+      if (
+        !text ||
+        text === "Enter chords above and select your keys." ||
+        text === "Fix unidentified chords before transposing."
+      ) {
+        return;
+      }
+
+      try {
+        await navigator.clipboard.writeText(text);
+        copyBtn.textContent = "Copied";
+        setMessage("success", "Output copied.");
+        setTimeout(() => {
+          copyBtn.textContent = "Copy Output";
+        }, 1200);
+      } catch {
+        setMessage("warning", "Clipboard unavailable in this browser context.");
+      }
+    });
+
+    chordsInput.addEventListener("keydown", event => {
+      if (event.key === "Enter" && (event.ctrlKey || event.metaKey)) {
+        event.preventDefault();
+        transposeChords();
+      }
+    });
+  </script>
+</body>
+</html>
